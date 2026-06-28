@@ -1,53 +1,134 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '../api/client';
+import { useNavigate } from 'react-router-dom';
+import { projectsApi } from '../api/projects';
+import NewProjectForm from '../components/NewProjectForm';
+import './Dashboard.css';
 
 function Dashboard() {
-  const [healthStatus, setHealthStatus] = useState('Checking...');
-  const [dbStatus, setDbStatus] = useState('Checking...');
-  const [storageStatus, setStorageStatus] = useState('Checking...');
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showNewProjectForm, setShowNewProjectForm] = useState(false);
 
   useEffect(() => {
-    checkHealth();
+    loadProjects();
   }, []);
 
-  const checkHealth = async () => {
+  const loadProjects = async () => {
     try {
-      const data = await apiClient.get('/health');
-      setHealthStatus(data.status);
-      setDbStatus(data.database);
-      setStorageStatus(data.storage);
+      const response = await projectsApi.getProjects();
+      setProjects(response.projects || []);
     } catch (error) {
-      setHealthStatus('Error');
-      setDbStatus('Error');
-      setStorageStatus('Error');
+      console.error('Failed to load projects:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleCreateProject = () => {
+    setShowNewProjectForm(true);
+  };
+
+  const handleProjectCreated = (project) => {
+    loadProjects();
+    navigate(`/project/${project.id}`);
+  };
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/project/${projectId}`);
+  };
+
+  const handleDeleteProject = async (projectId, event) => {
+    event.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      try {
+        await projectsApi.deleteProject(projectId);
+        loadProjects();
+      } catch (error) {
+        console.error('Failed to delete project:', error);
+        alert('Failed to delete project');
+      }
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      draft: '#9ca3af',
+      script_generated: '#3b82f6',
+      script_approved: '#10b981',
+      scenes_generated: '#3b82f6',
+      scenes_approved: '#10b981',
+      images_generated: '#3b82f6',
+      images_approved: '#10b981',
+      voice_generated: '#3b82f6',
+      voice_approved: '#10b981',
+      reel_generated: '#3b82f6',
+      completed: '#10b981',
+    };
+    return colors[status] || '#9ca3af';
+  };
+
+  if (loading) {
+    return <div className="dashboard-loading">Loading...</div>;
+  }
+
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>ContentFlow Dashboard</h1>
-      <div style={{ marginTop: '2rem' }}>
-        <h2>System Status</h2>
-        <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
-          <div>
-            <strong>API Status:</strong> {healthStatus}
-          </div>
-          <div>
-            <strong>Database:</strong> {dbStatus}
-          </div>
-          <div>
-            <strong>Storage:</strong> {storageStatus}
-          </div>
-        </div>
-      </div>
-      <div style={{ marginTop: '2rem' }}>
-        <button 
-          onClick={checkHealth}
-          style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
+    <div className="dashboard">
+      {showNewProjectForm && (
+        <NewProjectForm
+          onClose={() => setShowNewProjectForm(false)}
+          onSuccess={handleProjectCreated}
+        />
+      )}
+      
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">ContentFlow Dashboard</h1>
+        <button
+          onClick={handleCreateProject}
+          className="dashboard-button"
         >
-          Refresh Status
+          + New Project
         </button>
       </div>
+
+      {projects.length === 0 ? (
+        <div className="dashboard-empty">
+          <p className="dashboard-empty-text">No projects yet</p>
+          <p className="dashboard-empty-subtext">Click "New Project" to get started</p>
+        </div>
+      ) : (
+        <div className="dashboard-grid">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              onClick={() => handleProjectClick(project.id)}
+              className="dashboard-card"
+            >
+              <h3 className="dashboard-card-title">{project.title}</h3>
+              <p className="dashboard-card-topic">{project.topic}</p>
+              <div className="dashboard-card-meta">
+                <span
+                  className="dashboard-card-status"
+                  style={{ backgroundColor: getStatusColor(project.status) }}
+                >
+                  {project.status.replace('_', ' ')}
+                </span>
+                <span className="dashboard-card-date">{formatDate(project.created_at)}</span>
+              </div>
+              <button
+                onClick={(e) => handleDeleteProject(project.id, e)}
+                className="dashboard-card-delete"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

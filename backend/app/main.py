@@ -71,6 +71,6 @@ async def health_check():
     }
 
 
-# Register routers (will be added in future phases)
-# from app.modules.project.router import router as project_router
-# app.include_router(project_router, prefix="/api/v1", tags=["projects"])
+# Register routers
+from app.modules.project.router import router as project_router
+app.include_router(project_router, prefix="/api/v1", tags=["projects"])

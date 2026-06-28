@@ -1,0 +1,103 @@
+.newProjectForm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.newProjectForm-container {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.newProjectForm-title {
+  margin-top: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+}
+
+.newProjectForm-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.newProjectForm-field {
+  margin-bottom: 1.25rem;
+}
+
+.newProjectForm-fieldGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.newProjectForm-fieldGroup .newProjectForm-field {
+  margin-bottom: 0;
+}
+
+.newProjectForm-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.newProjectForm-input,
+.newProjectForm-textarea,
+.newProjectForm-select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #1f2937;
+  background-color: white;
+}
+
+.newProjectForm-textarea {
+  resize: vertical;
+}
+
+.newProjectForm-buttonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.newProjectForm-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.newProjectForm-button:disabled {
+  cursor: not-allowed;
+}
+
+.newProjectForm-button-cancel {
+  background-color: #9ca3af;
+  color: white;
+}
+
+.newProjectForm-button-submit {
+  background-color: #2563eb;
+  color: white;
+}

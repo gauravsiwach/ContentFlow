@@ -26,6 +26,14 @@ source .venv/bin/activate  # On macOS/Linux
 # Install dependencies
 pip install -r requirements.txt
 
+# Apply database migrations
+alembic upgrade head
+
+# (Optional) Install sqlite-web to view database in browser
+pip install sqlite-web
+# Then run: python -m sqlite_web contentflow.db
+# Open http://localhost:8080 to browse tables
+
 # Verify .env file exists (already created with defaults)
 # You can customize settings in backend/.env
 ```
@@ -166,6 +174,60 @@ Expected response:
 - Check backend logs in the terminal where uvicorn is running
 - Use browser DevTools for frontend debugging
 - API documentation available at `http://localhost:8000/docs` when backend is running
+
+## Database Management
+
+### Apply Database Migrations
+
+When you first set up or after schema changes, apply Alembic migrations:
+
+```bash
+cd backend
+source .venv/bin/activate
+alembic upgrade head
+```
+
+### View Database Tables
+
+**Using SQLite Web (Recommended):**
+
+1. Install sqlite-web:
+```bash
+cd backend
+source .venv/bin/activate
+pip install sqlite-web
+```
+
+2. Run the web interface:
+```bash
+python -m sqlite_web contentflow.db
+```
+
+3. Open http://localhost:8080 in your browser to browse tables
+
+**Using VS Code Extension:**
+
+1. Install "SQLite Viewer" extension by Florian Klampfer
+2. Right-click `backend/contentflow.db` → "Open Database"
+
+**Using Command Line:**
+
+```bash
+cd backend
+sqlite3 contentflow.db
+.tables
+.schema projects
+.schema tasks
+.quit
+```
+
+**Check Migration Status:**
+
+```bash
+cd backend
+source .venv/bin/activate
+alembic current
+```
 
 ## Next Steps
 

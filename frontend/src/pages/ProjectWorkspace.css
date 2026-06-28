@@ -1,0 +1,72 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.workspace-header {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workspace-header-info h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.workspace-header-info p {
+  margin: 0.25rem 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.workspace-back-button {
+  padding: 0.5rem 1rem;
+  background-color: #9ca3af;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.workspace-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.workspace-panel-left {
+  width: 250px;
+  border-right: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  overflow-y: auto;
+}
+
+.workspace-panel-center {
+  flex: 1;
+  overflow-y: auto;
+  background-color: white;
+}
+
+.workspace-panel-right {
+  width: 300px;
+  border-left: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  overflow-y: auto;
+}
+
+.workspace-error {
+  padding: 2rem;
+}
+
+.workspace-error-text {
+  color: #ef4444;
+}
+
+.workspace-loading {
+  padding: 2rem;
+}
