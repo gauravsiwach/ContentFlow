@@ -147,8 +147,8 @@ Each module owns:
 | Module | Responsibility |
 |--------|---------------|
 | **Project** | Project lifecycle (create, list, delete, status tracking) |
-| **Script** | Script generation, refinement, approval |
-| **Scene** | Scene breakdown generation, refinement, approval |
+| **Script** | Spoken narration generation (hook, main content, ending, CTA), refinement, approval |
+| **Scene** | Scene breakdown generation (titles, descriptions, camera directions, visual descriptions, image prompts, voice-over split), refinement, approval |
 | **Image** | Image prompt generation, image generation, approval |
 | **Voice** | Voice generation per scene, approval |
 | **Reel** | Final video assembly from approved assets |
@@ -458,8 +458,8 @@ The `response_validator.py` ensures AI outputs meet expected structure before th
 
 | Stage | Validation Rules |
 |-------|-----------------|
-| Script | Non-empty text, minimum length, contains content (not just meta-commentary) |
-| Scene | Valid JSON array, each scene has required fields (title, description, duration, voiceover_text, image_prompt) |
+| Script | Non-empty text, minimum length, contains spoken narration content (no scene headings, visual directions, camera directions, music cues, or production notes) |
+| Scene | Valid JSON array, each scene has required fields (title, description, duration, voiceover_text, image_prompt, camera_directions, visual_description) |
 | Image Prompt | Non-empty string, reasonable length |
 
 If validation fails, the orchestrator raises an `AIGenerationError` with a descriptive message. The module service can then retry or surface the error to the user.
@@ -599,13 +599,17 @@ Topic + Context
 │  - Context  │     │             │     │  - PNG per  │     │ Output:     │     │    Durations│
 │             │     │ Output:     │     │    scene    │     │  - WAV per  │     │             │
 │ Output:     │     │  - Scene[]  │     │             │     │    scene    │     │ Output:     │
-│  - Script   │     │    (title,  │     │ Depends On: │     │             │     │  - MP4 Reel │
-│    (text)   │     │    desc,    │     │  - Scenes   │     │ Depends On: │     │             │
-│             │     │    duration,│     │    Approved │     │  - Scenes   │     │ Depends On: │
-│ Depends On: │     │    voiceover│     │             │     │    Approved │     │  - Images   │
-│  - None     │     │    image    │     │             │     │             │     │    Approved │
-│             │     │    prompt)  │     │             │     │             │     │  - Voice    │
-│             │     │             │     │             │     │             │     │    Approved │
+│  - Spoken   │     │    (title,  │     │ Depends On: │     │             │     │  - MP4 Reel │
+│    Narration│     │    desc,    │     │  - Scenes   │     │ Depends On: │     │             │
+│  (hook,     │     │    duration,│     │    Approved │     │  - Scenes   │     │ Depends On: │
+│   main,     │     │    voiceover│     │             │     │    Approved │     │  - Images   │
+│   ending,   │     │    image    │     │             │     │             │     │    Approved │
+│   CTA)      │     │    prompt,  │     │             │     │             │     │  - Voice    │
+│             │     │    camera   │     │             │     │             │     │    Approved │
+│ Depends On: │     │    dirs,    │     │             │     │             │     │             │
+│  - None     │     │    visual   │     │             │     │             │     │             │
+│             │     │    desc)    │     │             │     │             │     │             │
+│             │     │             │     │             │     │             │     │             │
 │             │     │ Depends On: │     │             │     │             │     │             │
 │             │     │  - Script   │     │             │     │             │     │             │
 │             │     │    Approved │     │             │     │             │     │             │
@@ -616,8 +620,8 @@ Topic + Context
 
 | Stage | Input | Output | AI Model | Dependencies |
 |-------|-------|--------|----------|--------------|
-| **Script** | Topic, Language, Duration, Content Type, Template, Additional Context | Script text | Ollama/Qwen | None |
-| **Scenes** | Approved Script, Duration, Content Type | Array of scene objects (title, description, duration, voiceover_text, image_prompt) | Ollama/Qwen | Script Approved |
+| **Script** | Topic, Language, Duration, Content Type, Template, Additional Context | Spoken narration (hook, main content, ending, CTA) | Ollama/Qwen | None |
+| **Scenes** | Approved Script, Duration, Content Type | Array of scene objects (title, description, duration, voiceover_text, image_prompt, camera_directions, visual_description) | Ollama/Qwen | Script Approved |
 | **Images** | Image prompt (from scene) | PNG image file per scene | FLUX | Scenes Approved |
 | **Voice** | Voiceover text (from scene), Language | WAV audio file per scene | Kokoro TTS | Scenes Approved |
 | **Reel** | Approved images, Approved voice tracks, Scene durations | MP4 video file | FFmpeg | Images Approved + Voice Approved |
@@ -682,6 +686,8 @@ scenes
 ├── duration (seconds)
 ├── voiceover_text
 ├── image_prompt
+├── camera_directions
+├── visual_description
 ├── is_approved (boolean)
 ├── created_at
 └── updated_at

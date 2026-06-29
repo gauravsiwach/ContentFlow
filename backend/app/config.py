@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     # Ollama (LLM)
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434", description="Ollama API base URL")
     OLLAMA_MODEL: str = Field(default="qwen2.5:7b", description="Ollama model to use")
+    OLLAMA_TIMEOUT: int = Field(default=300, description="Ollama API timeout in seconds")
     
     # FLUX (Image Generation)
     FLUX_BASE_URL: str = Field(default="http://localhost:7860", description="FLUX API base URL")

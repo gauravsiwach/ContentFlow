@@ -21,6 +21,7 @@ class Project(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
+    script = relationship("Script", back_populates="project", uselist=False, cascade="all, delete-orphan")
 
 
 class Task(Base):

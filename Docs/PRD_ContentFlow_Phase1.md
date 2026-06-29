@@ -117,9 +117,15 @@ AI decides:
 - Number of scenes
 - Scene duration
 - Scene sequencing
+- Scene titles and descriptions
+- Camera directions
+- Visual descriptions
+- Image prompts
+- Voice-over split per scene
+- Production notes
 
 Inputs:
-- Script
+- Approved Script
 - Duration
 - Content Type
 

@@ -1,6 +1,7 @@
 import './ContentPanel.css';
+import ScriptStage from './ScriptStage';
 
-function ContentPanel({ project }) {
+function ContentPanel({ project, onStatusChange }) {
   const getStageContent = () => {
     switch (project.status) {
       case 'draft':
@@ -91,6 +92,12 @@ function ContentPanel({ project }) {
   };
 
   const content = getStageContent();
+
+  // Show ScriptStage for script-related statuses
+  const scriptStages = ['draft', 'script_generated', 'script_approved'];
+  if (scriptStages.includes(project.status)) {
+    return <ScriptStage project={project} onStatusChange={onStatusChange} />;
+  }
 
   return (
     <div className="contentPanel">

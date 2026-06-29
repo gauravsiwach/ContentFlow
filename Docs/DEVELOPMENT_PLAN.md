@@ -287,11 +287,11 @@ None in this phase.
 
 ### Objective
 
-Deliver script generation, editing, refinement, and approval. This is the first AI-powered stage and establishes the pattern for all subsequent modules.
+Deliver script generation, editing, refinement, and approval. This is the first AI-powered stage and establishes the pattern for all subsequent modules. The Script module generates ONLY the spoken narration (hook, main content, ending, CTA) without any production directions.
 
 ### Deliverables
 
-- Script generation via Ollama/Qwen
+- Spoken narration generation via Ollama/Qwen (hook, main content, ending, CTA only)
 - Script display in workspace
 - Script editing (manual)
 - Script refinement (AI-assisted with user instructions)
@@ -371,8 +371,8 @@ scripts
 | Component | Details |
 |-----------|---------|
 | Model | Ollama / Qwen |
-| Prompt | System prompt (role + rules) + Project context (topic, language, duration, content_type) + User instructions |
-| Validation | Non-empty response, minimum 100 characters, contains actual content |
+| Prompt | System prompt (role + rules, no production directions) + Project context (topic, language, duration, content_type) + User instructions |
+| Validation | Non-empty response, minimum 100 characters, contains spoken narration only (no scene headings, visual directions, camera directions, music cues, or production notes) |
 | Refinement | Current script + user feedback → updated script |
 
 ---
@@ -420,11 +420,11 @@ scripts
 
 ### Objective
 
-Generate scene breakdowns from an approved script. Scenes include title, description, duration, voiceover text, and image prompts. The AI determines the number of scenes and their sequencing.
+Generate scene breakdowns from an approved script. Scenes include title, description, duration, voiceover text, image prompts, camera directions, visual descriptions, and production notes. The AI determines the number of scenes and their sequencing. This phase converts the spoken narration into production-ready scenes.
 
 ### Deliverables
 
-- Scene generation from approved script
+- Scene generation from approved script (including camera directions, visual descriptions, image prompts)
 - Scene cards display in workspace
 - Individual scene editing
 - Scene refinement (all scenes regenerated with instructions)
@@ -436,12 +436,12 @@ Generate scene breakdowns from an approved script. Scenes include title, descrip
 
 | # | Task | Details |
 |---|------|---------|
-| 3.1 | Create `shared/prompts/scene.py` | System prompt for scene generation. Output format: JSON array of scene objects. |
-| 3.2 | Create `modules/scene/models.py` | SQLAlchemy model for `scenes` table |
+| 3.1 | Create `shared/prompts/scene.py` | System prompt for scene generation. Output format: JSON array of scene objects. Include camera directions, visual descriptions, image prompts. |
+| 3.2 | Create `modules/scene/models.py` | SQLAlchemy model for `scenes` table with fields: title, description, duration, voiceover_text, image_prompt, camera_directions, visual_description |
 | 3.3 | Create `modules/scene/schemas.py` | SceneResponse, SceneListResponse, SceneGenerateRequest, SceneRefineRequest |
 | 3.4 | Create `modules/scene/service.py` | generate_scenes, refine_scenes, approve_scenes, get_scenes, update_scene |
 | 3.5 | Create `modules/scene/router.py` | Endpoints for scene operations |
-| 3.6 | Update response_validator | Add scene validation: valid JSON array, required fields per scene (title, description, duration, voiceover_text, image_prompt) |
+| 3.6 | Update response_validator | Add scene validation: valid JSON array, required fields per scene (title, description, duration, voiceover_text, image_prompt, camera_directions, visual_description) |
 | 3.7 | Update workflow_service | Add scene stage transitions. Require "script_approved" to generate scenes. |
 | 3.8 | Handle scene parsing | Parse AI JSON response into individual scene records. Store each scene as separate row. |
 | 3.9 | Implement scene refinement | Send all scenes + user feedback to AI. Replace all scene records with new output. |
@@ -453,7 +453,7 @@ Generate scene breakdowns from an approved script. Scenes include title, descrip
 | # | Task | Details |
 |---|------|---------|
 | 3.10 | Create `src/api/scenes.ts` | API functions: generateScenes, getScenes, refineScenes, approveScenes, updateScene |
-| 3.11 | Build SceneStage component | List of scene cards. Each card shows: scene number, title, duration, voiceover text, image prompt. |
+| 3.11 | Build SceneStage component | List of scene cards. Each card shows: scene number, title, duration, voiceover text, image prompt, camera directions, visual description. |
 | 3.12 | Add "Generate Scenes" button | Visible when status is "script_approved". Triggers generation with polling. |
 | 3.13 | Add scene card editing | Click scene card to expand/edit individual fields |
 | 3.14 | Add "Refine" action | Input in AIPanel. Refines all scenes together. |
@@ -475,6 +475,8 @@ scenes
 ├── duration (INTEGER, NOT NULL)
 ├── voiceover_text (TEXT, NOT NULL)
 ├── image_prompt (TEXT, NOT NULL)
+├── camera_directions (TEXT, NOT NULL)
+├── visual_description (TEXT, NOT NULL)
 ├── is_approved (BOOLEAN, NOT NULL, default: false)
 ├── created_at (DATETIME, NOT NULL)
 └── updated_at (DATETIME, NOT NULL)
@@ -499,9 +501,9 @@ scenes
 | Component | Details |
 |-----------|---------|
 | Model | Ollama / Qwen |
-| Prompt | System prompt (JSON output format) + Approved script + Project context (duration, content_type) + User instructions |
-| Validation | Valid JSON array, each object has: title (string), description (string), duration (integer), voiceover_text (string), image_prompt (string) |
-| Output | AI determines scene count and sequencing based on script and duration |
+| Prompt | System prompt (JSON output format, include camera directions and visual descriptions) + Approved script + Project context (duration, content_type) + User instructions |
+| Validation | Valid JSON array, each object has: title (string), description (string), duration (integer), voiceover_text (string), image_prompt (string), camera_directions (string), visual_description (string) |
+| Output | AI determines scene count and sequencing based on script and duration. Converts spoken narration into production-ready scenes with visual and camera directions. |
 
 ---
 
@@ -509,21 +511,21 @@ scenes
 
 | Test | Expected Result |
 |------|----------------|
-| Generate scenes from approved script | JSON parsed, scenes stored as individual records |
+| Generate scenes from approved script | JSON parsed, scenes stored as individual records with camera_directions and visual_description |
 | Scene count determined by AI | Multiple scenes created, durations sum to approximate target |
 | Edit individual scene | Single scene record updated |
 | Refine scenes | All scenes regenerated with feedback incorporated |
 | Approve scenes | Project status advances to "scenes_approved" |
 | Generate when script not approved | Returns 409 |
 | Invalid JSON from AI | Error surfaced, user can retry |
-| UI displays scene cards | Each card shows all fields |
+| UI displays scene cards | Each card shows all fields including camera directions and visual description |
 
 ---
 
 ### Definition of Done
 
 - [ ] Scenes generate from approved script
-- [ ] AI produces valid scene breakdown with correct fields
+- [ ] AI produces valid scene breakdown with correct fields (including camera_directions and visual_description)
 - [ ] Scenes display as cards in workspace
 - [ ] Individual scenes can be edited
 - [ ] Scenes can be refined with instructions

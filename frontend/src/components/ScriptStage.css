@@ -1,0 +1,126 @@
+.scriptStage {
+  padding: 2rem;
+}
+
+.scriptStage-content {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.scriptStage-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  color: #374151;
+}
+
+.scriptStage-description {
+  margin: 0 0 2rem 0;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.scriptStage-button {
+  padding: 0.75rem 2rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.scriptStage-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.scriptStage-button-approve {
+  background-color: #059669;
+}
+
+.scriptStage-button-cancel {
+  background-color: #9ca3af;
+}
+
+.scriptStage-button-edit {
+  background-color: #6b7280;
+}
+
+.scriptStage-error {
+  margin-top: 1rem;
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.scriptStage-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.scriptStage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.scriptStage-editor {
+  margin-bottom: 1.5rem;
+}
+
+.scriptStage-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #1f2937;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+
+.scriptStage-textarea-small {
+  height: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.scriptStage-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.scriptStage-viewer {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.scriptStage-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.scriptStage-refine {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.scriptStage-refine-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #374151;
+}

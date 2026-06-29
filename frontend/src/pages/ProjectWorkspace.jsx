@@ -29,6 +29,10 @@ function ProjectWorkspace() {
     }
   };
 
+  const handleStatusChange = () => {
+    loadProject();
+  };
+
   if (loading) {
     return <div className="workspace-loading">Loading project...</div>;
   }
@@ -71,7 +75,7 @@ function ProjectWorkspace() {
         </div>
 
         <div className="workspace-panel-center">
-          <ContentPanel project={project} />
+          <ContentPanel project={project} onStatusChange={handleStatusChange} />
         </div>
 
         <div className="workspace-panel-right">
