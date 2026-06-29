@@ -74,5 +74,7 @@ async def health_check():
 # Register routers
 from app.modules.project.router import router as project_router
 from app.modules.script.router import router as script_router
+from app.modules.scene.router import router as scene_router
 app.include_router(project_router, prefix="/api/v1", tags=["projects"])
 app.include_router(script_router, prefix="/api/v1/projects", tags=["scripts"])
+app.include_router(scene_router, prefix="/api/v1/projects", tags=["scenes"])

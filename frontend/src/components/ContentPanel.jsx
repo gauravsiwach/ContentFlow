@@ -1,5 +1,6 @@
 import './ContentPanel.css';
 import ScriptStage from './ScriptStage';
+import SceneStage from './SceneStage';
 
 function ContentPanel({ project, onStatusChange }) {
   const getStageContent = () => {
@@ -94,9 +95,15 @@ function ContentPanel({ project, onStatusChange }) {
   const content = getStageContent();
 
   // Show ScriptStage for script-related statuses
-  const scriptStages = ['draft', 'script_generated', 'script_approved'];
+  const scriptStages = ['draft', 'script_generated'];
   if (scriptStages.includes(project.status)) {
     return <ScriptStage project={project} onStatusChange={onStatusChange} />;
+  }
+
+  // Show SceneStage for scene-related statuses
+  const sceneStages = ['script_approved', 'scenes_generated', 'scenes_approved'];
+  if (sceneStages.includes(project.status)) {
+    return <SceneStage project={project} onStatusChange={onStatusChange} />;
   }
 
   return (

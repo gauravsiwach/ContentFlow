@@ -75,10 +75,78 @@ class ResponseValidator:
     @staticmethod
     def _validate_scenes(response: str) -> str:
         """Validate scenes response"""
+        import json
+        import re
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
         cleaned = response.strip()
+        
+        # Log the raw response for debugging
+        logger.info(f"Raw LLM response (first 500 chars): {cleaned[:500]}")
+        logger.info(f"Raw LLM response (last 500 chars): {cleaned[-500:]}")
         
         # Minimum length check
         if len(cleaned) < 200:
             raise ValueError("Scenes response is too short (minimum 200 characters)")
+        
+        # Try to extract JSON from markdown code blocks or text
+        json_str = cleaned
+        
+        # Remove markdown code blocks if present
+        if "```json" in cleaned:
+            match = re.search(r'```json\s*(.*?)\s*```', cleaned, re.DOTALL)
+            if match:
+                json_str = match.group(1).strip()
+                logger.info("Extracted JSON from ```json block")
+        elif "```" in cleaned:
+            match = re.search(r'```\s*(.*?)\s*```', cleaned, re.DOTALL)
+            if match:
+                json_str = match.group(1).strip()
+                logger.info("Extracted JSON from ``` block")
+        
+        # Try to find JSON array in the response
+        if not json_str.startswith('['):
+            match = re.search(r'\[.*\]', json_str, re.DOTALL)
+            if match:
+                json_str = match.group(0)
+                logger.info("Extracted JSON array from text")
+        
+        logger.info(f"JSON string to parse (first 300 chars): {json_str[:300]}")
+        
+        # Check for valid JSON array
+        try:
+            scenes_data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON. Error: {e}")
+            logger.error(f"JSON string preview: {json_str[:500]}")
+            raise ValueError(f"Scenes response is not valid JSON: {e}. Response preview: {cleaned[:200]}")
+        
+        if not isinstance(scenes_data, list):
+            raise ValueError("Scenes response must be a JSON array")
+        
+        if len(scenes_data) == 0:
+            raise ValueError("Scenes response cannot be empty")
+        
+        # Validate each scene has required fields
+        required_fields = ["title", "description", "duration", "voiceover_text", "image_prompt", "camera_directions", "visual_description"]
+        for idx, scene in enumerate(scenes_data):
+            if not isinstance(scene, dict):
+                raise ValueError(f"Scene {idx} is not an object")
+            
+            for field in required_fields:
+                if field not in scene:
+                    raise ValueError(f"Scene {idx} missing required field: {field}")
+                
+                if not scene[field] or not str(scene[field]).strip():
+                    raise ValueError(f"Scene {idx} field '{field}' is empty")
+            
+            # Validate duration is an integer
+            if not isinstance(scene["duration"], int):
+                raise ValueError(f"Scene {idx} duration must be an integer")
+            
+            if scene["duration"] <= 0:
+                raise ValueError(f"Scene {idx} duration must be positive")
         
         return cleaned

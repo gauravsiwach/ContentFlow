@@ -27,10 +27,16 @@ class PromptBuilder:
         prompt_parts = []
         
         # Add project context
-        prompt_parts.append(f"Topic: {project_context.get('topic', '')}")
+        if project_context.get('topic'):
+            prompt_parts.append(f"Topic: {project_context.get('topic', '')}")
         prompt_parts.append(f"Language: {project_context.get('language', 'English')}")
         prompt_parts.append(f"Duration: {project_context.get('duration', 60)} seconds")
-        prompt_parts.append(f"Content Type: {project_context.get('content_type', '')}")
+        if project_context.get('content_type'):
+            prompt_parts.append(f"Content Type: {project_context.get('content_type', '')}")
+        
+        # Add script content for scene generation
+        if project_context.get('script'):
+            prompt_parts.append(f"\nScript:\n{project_context['script']}")
         
         if project_context.get('additional_context'):
             prompt_parts.append(f"Additional Context: {project_context['additional_context']}")
