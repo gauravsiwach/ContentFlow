@@ -23,5 +23,6 @@ class Scene(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationship to project
+    # Relationships
     project = relationship("Project", back_populates="scenes")
+    images = relationship("Image", back_populates="scene", cascade="all, delete-orphan")

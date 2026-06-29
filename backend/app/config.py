@@ -13,8 +13,11 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434", description="Ollama API base URL")
     OLLAMA_MODEL: str = Field(default="qwen2.5:7b", description="Ollama model to use")
     OLLAMA_TIMEOUT: int = Field(default=300, description="Ollama API timeout in seconds")
-    
-    # FLUX (Image Generation)
+
+    # Ollama (Image Generation)
+    OLLAMA_IMAGE_MODEL: str = Field(default="x/flux2-klein:4b", description="Ollama image generation model")
+
+    # FLUX (Image Generation) - Alternative
     FLUX_BASE_URL: str = Field(default="http://localhost:7860", description="FLUX API base URL")
     
     # Kokoro TTS (Voice Generation)

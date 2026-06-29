@@ -43,15 +43,57 @@ class WorkflowService:
     def can_generate_script(self, project_id: str, current_status: str) -> bool:
         """
         Check if script generation is allowed for the project
-        
+
         Args:
             project_id: Project ID
             current_status: Current project status
-        
+
         Returns:
             True if script generation is allowed, False otherwise
         """
         return current_status == "draft"
+
+    def can_generate_scenes(self, project_id: str) -> bool:
+        """
+        Check if scene generation is allowed for the project
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            True if scene generation is allowed, False otherwise
+        """
+        from app.modules.project import service as project_service
+        project = project_service.get_project(self.db, project_id)
+        return project.status == "script_approved" if project else False
+
+    def can_generate_images(self, project_id: str) -> bool:
+        """
+        Check if image generation is allowed for the project
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            True if image generation is allowed, False otherwise
+        """
+        from app.modules.project import service as project_service
+        project = project_service.get_project(self.db, project_id)
+        return project.status == "scenes_approved" if project else False
+
+    def can_approve_images(self, project_id: str) -> bool:
+        """
+        Check if image approval is allowed for the project
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            True if image approval is allowed, False otherwise
+        """
+        from app.modules.project import service as project_service
+        project = project_service.get_project(self.db, project_id)
+        return project.status == "images_generated" if project else False
     
     def advance_state(self, project_id: str, current_status: str, target_status: str) -> bool:
         """

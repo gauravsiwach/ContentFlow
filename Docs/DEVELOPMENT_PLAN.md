@@ -160,13 +160,22 @@ Set up the complete development environment. Establish project structure, toolin
 
 Deliver a fully working Project feature. Users can create, view, list, and delete projects. The Project Dashboard and Project Workspace UI are functional.
 
-### Deliverables
+### Status
 
+**✅ COMPLETED (June 29, 2026)**
 - Project CRUD (Create, Read, List, Delete)
 - Project Dashboard page with project cards
 - Project Workspace page with 3-panel layout (empty panels)
 - Project status tracking
 - Database schema for projects and tasks tables
+
+### Deliverables
+
+- Project CRUD (Create, Read, List, Delete) ✅
+- Project Dashboard page with project cards ✅
+- Project Workspace page with 3-panel layout (empty panels) ✅
+- Project status tracking ✅
+- Database schema for projects and tasks tables ✅
 
 ---
 
@@ -289,8 +298,9 @@ None in this phase.
 
 Deliver script generation, editing, refinement, and approval. This is the first AI-powered stage and establishes the pattern for all subsequent modules. The Script module generates ONLY the spoken narration (hook, main content, ending, CTA) without any production directions.
 
-### Deliverables
+### Status
 
+**✅ COMPLETED (June 29, 2026)**
 - Spoken narration generation via Ollama/Qwen (hook, main content, ending, CTA only)
 - Script display in workspace
 - Script editing (manual)
@@ -298,6 +308,16 @@ Deliver script generation, editing, refinement, and approval. This is the first 
 - Script approval (advances project to next stage)
 - AI layer foundation (orchestrator, prompt builder, response validator, ollama client)
 - Workflow service foundation
+
+### Deliverables
+
+- Spoken narration generation via Ollama/Qwen (hook, main content, ending, CTA only) ✅
+- Script display in workspace ✅
+- Script editing (manual) ✅
+- Script refinement (AI-assisted with user instructions) ✅
+- Script approval (advances project to next stage) ✅
+- AI layer foundation (orchestrator, prompt builder, response validator, ollama client) ✅
+- Workflow service foundation ✅
 
 ---
 
@@ -422,13 +442,26 @@ scripts
 
 Generate scene breakdowns from an approved script. Scenes include title, description, duration, voiceover text, image prompts, camera directions, visual descriptions, and production notes. The AI determines the number of scenes and their sequencing. This phase converts the spoken narration into production-ready scenes.
 
-### Deliverables
+### Status
 
+**✅ COMPLETED - Core Features (June 30, 2026)**
 - Scene generation from approved script (including camera directions, visual descriptions, image prompts)
-- Scene cards display in workspace
+- Scene cards display in workspace with all fields
+- Scene approval (advances project state)
+- Optimized prompt (156 lines → 36 lines) for faster LLM processing
+- Using qwen2.5:3b model (10s generation time vs 5+ minutes)
+
+**⏳ PENDING - Additional Features**
 - Individual scene editing
 - Scene refinement (all scenes regenerated with instructions)
-- Scene approval (advances project state)
+
+### Deliverables
+
+- Scene generation from approved script (including camera directions, visual descriptions, image prompts) ✅
+- Scene cards display in workspace ✅
+- Individual scene editing ⏳
+- Scene refinement (all scenes regenerated with instructions) ⏳
+- Scene approval (advances project state) ✅
 
 ---
 
