@@ -4,19 +4,19 @@ from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
-# Valid state transitions
+# Valid state transitions (including backward transitions)
 VALID_TRANSITIONS = {
     "draft": ["script_generated"],
-    "script_generated": ["script_approved"],
-    "script_approved": ["scenes_generated"],
-    "scenes_generated": ["scenes_approved"],
-    "scenes_approved": ["images_generated"],
-    "images_generated": ["images_approved"],
-    "images_approved": ["voices_generated"],
-    "voices_generated": ["voices_approved"],
-    "voices_approved": ["reel_generated"],
-    "reel_generated": ["completed"],
-    "completed": []
+    "script_generated": ["draft", "script_approved"],
+    "script_approved": ["draft", "script_generated", "scenes_generated"],
+    "scenes_generated": ["script_approved", "scenes_approved"],
+    "scenes_approved": ["script_approved", "scenes_generated", "images_generated"],
+    "images_generated": ["scenes_approved", "images_approved"],
+    "images_approved": ["scenes_approved", "images_generated", "voices_generated"],
+    "voices_generated": ["images_approved", "voices_approved"],
+    "voices_approved": ["images_approved", "voices_generated", "reel_generated"],
+    "reel_generated": ["voices_approved", "completed"],
+    "completed": ["reel_generated", "voices_approved", "images_approved", "scenes_approved", "script_approved"]
 }
 
 class WorkflowService:
@@ -65,7 +65,7 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        return project.status == "script_approved" if project else False
+        return project.status in ["script_approved", "scenes_generated"] if project else False
 
     def can_generate_images(self, project_id: str) -> bool:
         """
@@ -79,7 +79,12 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        return project.status == "scenes_approved" if project else False
+        # Allow image generation at any stage after scenes are approved
+        allowed = [
+            "scenes_approved", "images_generated", "images_approved",
+            "voices_generated", "voices_approved", "reel_generated", "completed"
+        ]
+        return project.status in allowed if project else False
 
     def can_approve_images(self, project_id: str) -> bool:
         """
@@ -107,7 +112,12 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        return project.status == "images_approved" if project else False
+        # Allow voice generation at any stage after images are approved
+        allowed = [
+            "images_approved", "voices_generated", "voices_approved",
+            "reel_generated", "completed"
+        ]
+        return project.status in allowed if project else False
 
     def can_generate_reel(self, project_id: str) -> bool:
         """
@@ -121,7 +131,8 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        return project.status == "voices_approved" if project else False
+        # Allow reel generation from voices_approved or reel_generated (for regeneration)
+        return project.status in ["voices_approved", "reel_generated"] if project else False
     
     def advance_state(self, project_id: str, current_status: str, target_status: str) -> bool:
         """

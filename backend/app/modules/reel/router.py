@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 import logging
 import os
@@ -41,9 +41,14 @@ async def generate_reel(
             fps=request.fps
         )
 
-        # Update project status
-        project_service.update_project_status(db, project_id, "reel_generated")
-        logger.info(f"Reel generated for project {project_id}, status updated to reel_generated")
+        # Update project status only if not already reel_generated
+        workflow = WorkflowService(db)
+        project = project_service.get_project(db, project_id)
+        if project.status != "reel_generated":
+            project_service.update_project_status(db, project_id, "reel_generated")
+            logger.info(f"Reel generated for project {project_id}, status updated to reel_generated")
+        else:
+            logger.info(f"Reel regenerated for project {project_id}, status remains reel_generated")
 
         return reel
 
@@ -71,8 +76,8 @@ def get_reel(project_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/serve")
-def serve_reel(project_id: str, db: Session = Depends(get_db)):
-    """Serve the reel video file"""
+def serve_reel(project_id: str, request: Request, db: Session = Depends(get_db)):
+    """Serve the reel video file with range request support for browser streaming"""
     try:
         reel_service = ReelService(db)
         reel = reel_service.get_reel(project_id)
@@ -80,27 +85,56 @@ def serve_reel(project_id: str, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Reel not found")
 
         file_path = reel.file_path
-        if file_path.startswith('../'):
-            # router.py is at backend/app/modules/reel/router.py
-            # Go up 4 levels to get to backend directory
-            backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-            file_path = os.path.abspath(os.path.join(backend_dir, file_path))
-        elif not os.path.isabs(file_path):
-            backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-            file_path = os.path.abspath(os.path.join(backend_dir, file_path))
+        logger.info(f"Reel file_path from DB: {file_path}")
 
         if not os.path.exists(file_path):
+            logger.error(f"File not found at: {file_path}")
             raise HTTPException(status_code=404, detail="Reel file not found on disk")
 
-        return FileResponse(
-            file_path,
-            media_type="video/mp4",
-            filename=f"reel_{project_id}.mp4",
-            headers={
+        file_size = os.path.getsize(file_path)
+        range_header = request.headers.get("range")
+
+        if range_header:
+            range_val = range_header.strip().replace("bytes=", "")
+            start_str, end_str = range_val.split("-")
+            start = int(start_str)
+            end = int(end_str) if end_str else file_size - 1
+            end = min(end, file_size - 1)
+            chunk_size = end - start + 1
+
+            def iter_file():
+                with open(file_path, "rb") as f:
+                    f.seek(start)
+                    remaining = chunk_size
+                    while remaining > 0:
+                        data = f.read(min(65536, remaining))
+                        if not data:
+                            break
+                        remaining -= len(data)
+                        yield data
+
+            headers = {
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
                 "Accept-Ranges": "bytes",
-                "Cache-Control": "no-cache"
+                "Content-Length": str(chunk_size),
+                "Content-Type": "video/mp4",
             }
-        )
+            return StreamingResponse(iter_file(), status_code=206, headers=headers)
+
+        def iter_full_file():
+            with open(file_path, "rb") as f:
+                while True:
+                    data = f.read(65536)
+                    if not data:
+                        break
+                    yield data
+
+        headers = {
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(file_size),
+            "Content-Type": "video/mp4",
+        }
+        return StreamingResponse(iter_full_file(), status_code=200, headers=headers)
 
     except HTTPException:
         raise

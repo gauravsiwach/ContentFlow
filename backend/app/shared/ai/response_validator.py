@@ -129,24 +129,46 @@ class ResponseValidator:
         if len(scenes_data) == 0:
             raise ValueError("Scenes response cannot be empty")
         
-        # Validate each scene has required fields
+        # Validate each scene has required fields, filter out invalid scenes
+        import logging
+        validator_logger = logging.getLogger(__name__)
         required_fields = ["title", "description", "duration", "voiceover_text", "image_prompt", "camera_directions", "visual_description"]
-        for idx, scene in enumerate(scenes_data):
+        valid_scenes = []
+        
+        for idx, scene in enumerate(scenes_data, 1):
             if not isinstance(scene, dict):
-                raise ValueError(f"Scene {idx} is not an object")
+                validator_logger.warning(f"Scene {idx} is not an object, skipping")
+                continue
             
+            skip = False
             for field in required_fields:
-                if field not in scene:
-                    raise ValueError(f"Scene {idx} missing required field: {field}")
-                
-                if not scene[field] or not str(scene[field]).strip():
-                    raise ValueError(f"Scene {idx} field '{field}' is empty")
+                if field not in scene or not scene[field] or not str(scene[field]).strip():
+                    validator_logger.warning(f"Scene {idx} field '{field}' is missing or empty, skipping scene")
+                    skip = True
+                    break
+            
+            if skip:
+                continue
             
             # Validate duration is an integer
             if not isinstance(scene["duration"], int):
-                raise ValueError(f"Scene {idx} duration must be an integer")
+                try:
+                    scene["duration"] = int(scene["duration"])
+                except (ValueError, TypeError):
+                    validator_logger.warning(f"Scene {idx} duration is not an integer, skipping")
+                    continue
             
             if scene["duration"] <= 0:
-                raise ValueError(f"Scene {idx} duration must be positive")
+                validator_logger.warning(f"Scene {idx} duration must be positive, skipping")
+                continue
+            
+            valid_scenes.append(scene)
         
-        return cleaned
+        if len(valid_scenes) == 0:
+            raise ValueError("No valid scenes after validation")
+        
+        validator_logger.info(f"Validated {len(valid_scenes)} out of {len(scenes_data)} scenes")
+        
+        # Convert back to JSON string for downstream parsing
+        import json
+        return json.dumps(valid_scenes)

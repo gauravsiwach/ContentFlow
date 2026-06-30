@@ -88,25 +88,67 @@ function ScriptStage({ project, onStatusChange }) {
     }
   };
 
+  const handleMoveToScenes = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      onStatusChange('script_approved');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (project.status === 'draft') {
-    return (
-      <div className="scriptStage">
-        <div className="scriptStage-content">
-          <h3 className="scriptStage-title">Script Generation</h3>
-          <p className="scriptStage-description">
-            Generate a script for your video using AI. The script will be based on your project topic, language, duration, and content type.
-          </p>
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="scriptStage-button"
-          >
-            {loading ? 'Generating...' : 'Generate Script'}
-          </button>
+    if (!script) {
+      return (
+        <div className="scriptStage">
+          <div className="scriptStage-content">
+            <h3 className="scriptStage-title">Script Generation</h3>
+            <p className="scriptStage-description">
+              Generate a script for your video using AI. The script will be based on your project topic, language, duration, and content type.
+            </p>
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="scriptStage-button"
+            >
+              {loading ? 'Generating...' : 'Generate Script'}
+            </button>
+            {error && <div className="scriptStage-error">{error}</div>}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="scriptStage">
+          <div className="scriptStage-header">
+            <h3 className="scriptStage-title">Script</h3>
+          </div>
+          <div className="scriptStage-viewer">
+            <div className="scriptStage-text">{script.content}</div>
+          </div>
+          <div className="scriptStage-actions">
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="scriptStage-button scriptStage-button-secondary"
+            >
+              {loading ? 'Regenerating...' : 'Regenerate Script'}
+            </button>
+            <button
+              onClick={() => onStatusChange('script_generated')}
+              disabled={loading}
+              className="scriptStage-button"
+            >
+              Move to Script Review
+            </button>
+          </div>
           {error && <div className="scriptStage-error">{error}</div>}
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   if (!script) {
@@ -191,6 +233,25 @@ function ScriptStage({ project, onStatusChange }) {
             className="scriptStage-button"
           >
             {loading ? 'Refining...' : 'Refine'}
+          </button>
+        </div>
+      )}
+
+      {script.is_approved && (
+        <div className="scriptStage-actions">
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="scriptStage-button scriptStage-button-secondary"
+          >
+            {loading ? 'Regenerating...' : 'Regenerate Script'}
+          </button>
+          <button
+            onClick={handleMoveToScenes}
+            disabled={loading}
+            className="scriptStage-button"
+          >
+            Move to Scenes
           </button>
         </div>
       )}

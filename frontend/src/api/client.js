@@ -80,6 +80,11 @@ class ApiClient {
         throw new Error(error.error || 'Request failed');
       }
 
+      // 204 No Content responses have no body
+      if (response.status === 204) {
+        return null;
+      }
+
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);

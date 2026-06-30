@@ -59,7 +59,7 @@ const ReelStage = ({ project, onStatusChange }) => {
   const handleMarkComplete = async () => {
     try {
       await projectsApi.markProjectComplete(project.id);
-      onStatusChange();
+      onStatusChange('completed');
     } catch (err) {
       setError('Failed to mark project as complete');
     }
@@ -86,7 +86,7 @@ const ReelStage = ({ project, onStatusChange }) => {
         </div>
       )}
 
-      {!reel && !generating && (
+      {!reel && !generating && project.status === 'voices_approved' && (
         <div className="reelStage-empty">
           <p>No reel generated yet</p>
           <button
@@ -96,6 +96,28 @@ const ReelStage = ({ project, onStatusChange }) => {
           >
             Generate Reel
           </button>
+        </div>
+      )}
+
+      {!reel && !generating && project.status !== 'voices_approved' && (
+        <div className="reelStage-empty">
+          <p>Reel exists but navigated back</p>
+          <div className="reelStage-actions">
+            <button
+              className="reelStage-button reelStage-button-secondary"
+              onClick={handleGenerateReel}
+              disabled={generating}
+            >
+              Regenerate Reel
+            </button>
+            <button
+              className="reelStage-button"
+              onClick={() => onStatusChange('reel_generated')}
+              disabled={generating}
+            >
+              Move to Reel Review
+            </button>
+          </div>
         </div>
       )}
 

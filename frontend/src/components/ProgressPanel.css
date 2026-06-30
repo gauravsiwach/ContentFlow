@@ -34,6 +34,11 @@
   font-weight: bold;
 }
 
+.progressPanel-stage.clickable:hover {
+  background-color: #f3f4f6;
+  cursor: pointer;
+}
+
 .progressPanel-stage-indicator {
   width: 20px;
   height: 20px;

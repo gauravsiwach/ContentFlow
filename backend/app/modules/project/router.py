@@ -49,5 +49,16 @@ def update_project_endpoint(project_id: str, project_data: ProjectUpdate, db: Se
 
 @router.post("/{project_id}/complete", response_model=ProjectResponse)
 def mark_project_complete(project_id: str, db: Session = Depends(get_db)):
-    """Mark project as completed."""
-    return update_project_status(db, project_id, "completed")
+    """Mark project as completed. Requires a reel to exist."""
+    from app.modules.reel.service import ReelService
+    reel_service = ReelService(db)
+    reel = reel_service.get_reel(project_id)
+    if not reel:
+        raise HTTPException(status_code=400, detail="No reel found. Generate a reel before marking complete.")
+    
+    # Directly update status without workflow validation since we already verified reel exists
+    project = get_project(db, project_id)
+    project.status = "completed"
+    db.commit()
+    db.refresh(project)
+    return project

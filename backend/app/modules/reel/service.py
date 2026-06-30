@@ -104,27 +104,7 @@ class ReelService:
                 img_path = data['image'].file_path
                 audio_path = data['voice'].file_path
 
-                # Resolve relative paths
-                # service.py is at backend/app/modules/reel/service.py
-                # Go up 4 levels to get to backend directory
-                backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-                logger.info(f"Backend dir: {backend_dir}")
-                logger.info(f"Original img_path: {img_path}")
-                logger.info(f"Original audio_path: {audio_path}")
-
-                if img_path.startswith('../'):
-                    # Resolve relative to backend directory
-                    img_path = os.path.abspath(os.path.join(backend_dir, img_path))
-                elif not os.path.isabs(img_path):
-                    img_path = os.path.abspath(os.path.join(backend_dir, img_path))
-
-                if audio_path.startswith('../'):
-                    audio_path = os.path.abspath(os.path.join(backend_dir, audio_path))
-                elif not os.path.isabs(audio_path):
-                    audio_path = os.path.abspath(os.path.join(backend_dir, audio_path))
-
-                logger.info(f"Resolved paths - Image: {img_path}, Audio: {audio_path}")
+                logger.info(f"Image path: {img_path}, Audio path: {audio_path}")
 
                 # Verify files exist
                 if not os.path.exists(img_path):
@@ -180,6 +160,13 @@ class ReelService:
             if process.returncode != 0:
                 logger.error(f"FFmpeg error: {process.stderr}")
                 raise ValueError(f"FFmpeg failed: {process.stderr}")
+            
+            # Verify file was created
+            if not os.path.exists(output_path):
+                logger.error(f"FFmpeg completed but file not found at: {output_path}")
+                logger.error(f"FFmpeg stdout: {process.stdout}")
+                logger.error(f"FFmpeg stderr: {process.stderr}")
+                raise ValueError(f"Reel file was not created at {output_path}")
 
             # Get video duration using ffprobe
             duration = await self._get_video_duration(output_path)
@@ -187,7 +174,7 @@ class ReelService:
             # Create reel record
             reel_create = ReelCreate(
                 project_id=project_id,
-                file_path=f"../storage/projects/{project_id}/reel/reel.mp4",
+                file_path=output_path,
                 duration=duration,
                 format="mp4",
                 resolution=resolution

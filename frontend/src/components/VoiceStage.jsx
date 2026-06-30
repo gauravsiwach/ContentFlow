@@ -12,8 +12,13 @@ function VoiceStage({ project, onStatusChange }) {
   const [expandedVoice, setExpandedVoice] = useState(null);
   const [playingVoice, setPlayingVoice] = useState(null);
 
+  const POST_IMAGES_STATUSES = [
+    'images_approved', 'voices_generated', 'voices_approved',
+    'reel_generated', 'completed'
+  ];
+
   useEffect(() => {
-    if (project.status === 'images_approved' || project.status === 'voices_generated' || project.status === 'voices_approved') {
+    if (POST_IMAGES_STATUSES.includes(project.status)) {
       loadScenes();
       loadVoices();
     }
@@ -83,9 +88,21 @@ function VoiceStage({ project, onStatusChange }) {
     try {
       setLoading(true);
       await voicesApi.approveVoices(project.id);
-      onStatusChange();
+      onStatusChange('voices_approved');
     } catch (err) {
       setError('Failed to approve voices');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMoveToReel = async () => {
+    try {
+      setLoading(true);
+      onStatusChange('voices_approved');
+    } catch (err) {
+      setError('Failed to move to reel');
       console.error(err);
     } finally {
       setLoading(false);
@@ -118,40 +135,91 @@ function VoiceStage({ project, onStatusChange }) {
   }
 
   if (project.status === 'images_approved') {
-    return (
-      <div className="voice-stage">
-        <h3>Ready to Generate Voices</h3>
-        <p>Generate voiceovers for {scenes.length} scenes using Hindi TTS</p>
-        <button
-          className="btn btn-primary"
-          onClick={handleGenerateAllVoices}
-          disabled={loading}
-        >
-          {loading ? 'Generating All...' : 'Generate All Voices'}
-        </button>
-        <div className="scene-list">
-          {scenes.map((scene) => {
-            const hasVoice = voices.some(v => v.scene_id === scene.id);
-            return (
-              <div key={scene.id} className="scene-item">
-                <span>Scene {scene.scene_number}: {scene.title}</span>
-                {hasVoice ? (
-                  <span className="status-done">✓ Done</span>
-                ) : (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handleGenerateSceneVoice(scene.id)}
-                    disabled={generatingSceneId === scene.id}
-                  >
-                    {generatingSceneId === scene.id ? 'Generating...' : 'Generate'}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+    if (voices.length === 0) {
+      return (
+        <div className="voice-stage">
+          <h3>Ready to Generate Voices</h3>
+          <p>Generate voiceovers for {scenes.length} scenes using Hindi TTS</p>
+          <button
+            className="btn btn-primary"
+            onClick={handleGenerateAllVoices}
+            disabled={loading}
+          >
+            {loading ? 'Generating All...' : 'Generate All Voices'}
+          </button>
+          <div className="scene-list">
+            {scenes.map((scene) => {
+              const hasVoice = voices.some(v => v.scene_id === scene.id);
+              return (
+                <div key={scene.id} className="scene-item">
+                  <span>Scene {scene.scene_number}: {scene.title}</span>
+                  {hasVoice ? (
+                    <span className="status-done">✓ Done</span>
+                  ) : (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleGenerateSceneVoice(scene.id)}
+                      disabled={generatingSceneId === scene.id}
+                    >
+                      {generatingSceneId === scene.id ? 'Generating...' : 'Generate'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div className="voice-stage">
+          <div className="voice-header">
+            <h3>Voiceovers ({voices.length})</h3>
+            <div className="voice-header-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={handleGenerateAllVoices}
+                disabled={loading}
+              >
+                {loading ? 'Regenerating...' : 'Regenerate All Voices'}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => onStatusChange('voices_generated')}
+                disabled={loading}
+              >
+                Move to Voice Review
+              </button>
+            </div>
+          </div>
+
+          <div className="voice-grid">
+            {voices.map((voice) => {
+              const scene = scenes.find(s => s.id === voice.scene_id);
+              const audioUrl = `/api/v1/projects/${project.id}/voices/${voice.scene_id}`;
+              return (
+                <div
+                  key={voice.id}
+                  className="voice-card"
+                >
+                  <div className="voice-info">
+                    <h4>Scene {scene?.scene_number || voice.scene_id}: {scene?.title || 'Unknown'}</h4>
+                    <p className="voice-text">{voice.text_used}</p>
+                    <p className="voice-meta">Voice: {voice.voice_used}</p>
+                  </div>
+                  <div className="voice-player">
+                    <audio
+                      src={audioUrl}
+                      controls
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
   }
 
   if (voices.length === 0 && project.status !== 'images_approved') {
@@ -162,15 +230,35 @@ function VoiceStage({ project, onStatusChange }) {
     <div className="voice-stage">
       <div className="voice-header">
         <h3>Voiceovers ({voices.length})</h3>
-        {project.status === 'voices_generated' && (
-          <button
-            className="btn btn-primary"
-            onClick={handleApproveVoices}
-            disabled={loading}
-          >
-            Approve All
-          </button>
-        )}
+        <div className="voice-header-actions">
+          {project.status === 'voices_generated' && (
+            <button
+              className="btn btn-primary"
+              onClick={handleApproveVoices}
+              disabled={loading}
+            >
+              Approve All
+            </button>
+          )}
+          {project.status === 'voices_approved' && (
+            <>
+              <button
+                className="btn btn-secondary"
+                onClick={handleGenerateAllVoices}
+                disabled={loading}
+              >
+                {loading ? 'Regenerating...' : 'Regenerate All Voices'}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleMoveToReel}
+                disabled={loading}
+              >
+                Move to Reel
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="voice-grid">

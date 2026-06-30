@@ -1,6 +1,6 @@
 import './ProgressPanel.css';
 
-function ProgressPanel({ project }) {
+function ProgressPanel({ project, onStageClick }) {
   const stages = [
     { key: 'draft', label: 'Draft' },
     { key: 'script_generated', label: 'Script' },
@@ -9,8 +9,8 @@ function ProgressPanel({ project }) {
     { key: 'scenes_approved', label: 'Scenes ✓' },
     { key: 'images_generated', label: 'Images' },
     { key: 'images_approved', label: 'Images ✓' },
-    { key: 'voice_generated', label: 'Voice' },
-    { key: 'voice_approved', label: 'Voice ✓' },
+    { key: 'voices_generated', label: 'Voice' },
+    { key: 'voices_approved', label: 'Voice ✓' },
     { key: 'reel_generated', label: 'Reel' },
     { key: 'completed', label: 'Completed ✓' },
   ];
@@ -20,6 +20,12 @@ function ProgressPanel({ project }) {
   };
 
   const currentIndex = getCurrentStageIndex();
+
+  const handleStageClick = (stageKey) => {
+    if (onStageClick) {
+      onStageClick(stageKey);
+    }
+  };
 
   return (
     <div className="progressPanel">
@@ -31,11 +37,17 @@ function ProgressPanel({ project }) {
         {stages.map((stage, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
+          const isClickable = index <= currentIndex || isCurrent; // Allow clicking current and previous stages
 
-          const stageClass = `progressPanel-stage ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
+          const stageClass = `progressPanel-stage ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''} ${isClickable ? 'clickable' : ''}`;
 
           return (
-            <div key={stage.key} className={stageClass}>
+            <div
+              key={stage.key}
+              className={stageClass}
+              onClick={() => isClickable && handleStageClick(stage.key)}
+              style={{ cursor: isClickable ? 'pointer' : 'default' }}
+            >
               <div className="progressPanel-stage-indicator">
                 {isCompleted ? '✓' : index + 1}
               </div>

@@ -132,16 +132,7 @@ def serve_voice(project_id: str, scene_id: str, db: Session = Depends(get_db)):
 
         logger.info(f"Found voice with file_path: {voice.file_path}")
 
-        # Handle relative paths by resolving from backend root
         file_path = voice.file_path
-        if file_path.startswith('../'):
-            # Resolve relative path from backend root (not app directory)
-            # __file__ is in backend/app/modules/voice/router.py
-            # We need to go up 3 levels to reach backend/
-            backend_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-            file_path = os.path.abspath(os.path.join(backend_root, file_path))
-            logger.info(f"Resolved relative path to: {file_path}")
-
         if not os.path.exists(file_path):
             logger.error(f"Voice file not found on disk: {file_path}")
             raise HTTPException(status_code=404, detail="Voice file not found on disk: {file_path}")

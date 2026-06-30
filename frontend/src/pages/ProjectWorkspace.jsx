@@ -29,8 +29,24 @@ function ProjectWorkspace() {
     }
   };
 
-  const handleStatusChange = () => {
+  const handleStatusChange = async (targetStatus) => {
+    if (targetStatus) {
+      try {
+        await projectsApi.updateProject(projectId, { status: targetStatus });
+      } catch (error) {
+        console.error('Failed to update project status:', error);
+      }
+    }
     loadProject();
+  };
+
+  const handleStageClick = async (stageKey) => {
+    try {
+      await projectsApi.updateProject(projectId, { status: stageKey });
+      loadProject();
+    } catch (error) {
+      console.error('Failed to update project status:', error);
+    }
   };
 
   if (loading) {
@@ -71,7 +87,7 @@ function ProjectWorkspace() {
 
       <div className="workspace-layout">
         <div className="workspace-panel-left">
-          <ProgressPanel project={project} />
+          <ProgressPanel project={project} onStageClick={handleStageClick} />
         </div>
 
         <div className="workspace-panel-center">
