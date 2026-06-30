@@ -26,3 +26,4 @@ class Scene(Base):
     # Relationships
     project = relationship("Project", back_populates="scenes")
     images = relationship("Image", back_populates="scene", cascade="all, delete-orphan")
+    voices = relationship("Voice", back_populates="scene", cascade="all, delete-orphan")

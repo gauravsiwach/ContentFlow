@@ -2,6 +2,7 @@ import './ContentPanel.css';
 import ScriptStage from './ScriptStage';
 import SceneStage from './SceneStage';
 import ImageStage from './ImageStage';
+import VoiceStage from './VoiceStage';
 
 function ContentPanel({ project, onStatusChange }) {
   const getStageContent = () => {
@@ -55,14 +56,14 @@ function ContentPanel({ project, onStatusChange }) {
           description: 'Ready to generate voiceover for each scene.',
           action: 'Generate Voice',
         };
-      case 'voice_generated':
+      case 'voices_generated':
         return {
           title: 'Voice Review',
           message: 'Voice generated',
           description: 'Review the generated voiceover and approve or refine it.',
           action: 'Approve Voice',
         };
-      case 'voice_approved':
+      case 'voices_approved':
         return {
           title: 'Reel Generation',
           message: 'Voice approved',
@@ -108,9 +109,15 @@ function ContentPanel({ project, onStatusChange }) {
   }
 
   // Show ImageStage for image-related statuses
-  const imageStages = ['scenes_approved', 'images_generated', 'images_approved'];
+  const imageStages = ['scenes_approved', 'images_generated'];
   if (imageStages.includes(project.status)) {
     return <ImageStage project={project} onStatusChange={onStatusChange} />;
+  }
+
+  // Show VoiceStage for voice-related statuses
+  const voiceStages = ['images_approved', 'voices_generated'];
+  if (voiceStages.includes(project.status)) {
+    return <VoiceStage project={project} onStatusChange={onStatusChange} />;
   }
 
   return (

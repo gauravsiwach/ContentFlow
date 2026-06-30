@@ -24,6 +24,7 @@ class Project(Base):
     script = relationship("Script", back_populates="project", uselist=False, cascade="all, delete-orphan")
     scenes = relationship("Scene", back_populates="project", cascade="all, delete-orphan")
     images = relationship("Image", back_populates="project", cascade="all, delete-orphan")
+    voices = relationship("Voice", back_populates="project", cascade="all, delete-orphan")
 
 
 class Task(Base):

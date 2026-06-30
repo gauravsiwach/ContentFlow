@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     
     # Kokoro TTS (Voice Generation)
     KOKORO_BASE_URL: str = Field(default="http://localhost:8888", description="Kokoro TTS API base URL")
+
+    # Orpheus TTS (Voice Generation)
+    ORPHEUS_TTS_MODEL: str = Field(default="sematre/orpheus:hi", description="Orpheus TTS model to use")
     
     # FFmpeg
     FFMPEG_PATH: str = Field(default="ffmpeg", description="Path to FFmpeg executable")

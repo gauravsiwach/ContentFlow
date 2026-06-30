@@ -12,9 +12,9 @@ VALID_TRANSITIONS = {
     "scenes_generated": ["scenes_approved"],
     "scenes_approved": ["images_generated"],
     "images_generated": ["images_approved"],
-    "images_approved": ["voice_generated"],
-    "voice_generated": ["voice_approved"],
-    "voice_approved": ["reel_generated"],
+    "images_approved": ["voices_generated"],
+    "voices_generated": ["voices_approved"],
+    "voices_approved": ["reel_generated"],
     "reel_generated": ["completed"],
     "completed": []
 }
@@ -94,6 +94,20 @@ class WorkflowService:
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
         return project.status == "images_generated" if project else False
+
+    def can_generate_voices(self, project_id: str) -> bool:
+        """
+        Check if voice generation is allowed for the project
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            True if voice generation is allowed, False otherwise
+        """
+        from app.modules.project import service as project_service
+        project = project_service.get_project(self.db, project_id)
+        return project.status == "images_approved" if project else False
     
     def advance_state(self, project_id: str, current_status: str, target_status: str) -> bool:
         """

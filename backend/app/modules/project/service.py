@@ -69,9 +69,9 @@ def update_project_status(db: Session, project_id: str, new_status: str) -> Proj
         "scenes_generated": ["scenes_approved", "scenes_generated"],
         "scenes_approved": ["images_generated"],
         "images_generated": ["images_approved", "images_generated"],
-        "images_approved": ["voice_generated"],
-        "voice_generated": ["voice_approved", "voice_generated"],
-        "voice_approved": ["reel_generated"],
+        "images_approved": ["voices_generated"],
+        "voices_generated": ["voices_approved", "voices_generated"],
+        "voices_approved": ["reel_generated"],
         "reel_generated": ["completed"],
         "completed": []
     }

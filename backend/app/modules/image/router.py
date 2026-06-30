@@ -147,6 +147,17 @@ async def refine_image(
 def approve_images(project_id: str, db: Session = Depends(get_db)):
     """Approve all images for a project"""
     try:
+        # Get current project status
+        project = project_service.get_project(db, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # Skip validation if already approved
+        if project.status == "images_approved":
+            image_service = ImageService(db)
+            images = image_service.get_images(project_id)
+            return {"message": "Images already approved", "count": len(images)}
+
         # Validate project state
         workflow = WorkflowService(db)
         if not workflow.can_approve_images(project_id):
@@ -159,7 +170,8 @@ def approve_images(project_id: str, db: Session = Depends(get_db)):
         images = image_service.approve_images(project_id)
 
         # Update project status
-        workflow.advance_state(project_id, "images_generated", "images_approved")
+        project_service.update_project_status(db, project_id, "images_approved")
+        logger.info(f"All images approved for project {project_id}, status updated to images_approved")
 
         return {"message": "Images approved successfully", "count": len(images)}
     except Exception as e:
