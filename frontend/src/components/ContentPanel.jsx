@@ -3,6 +3,7 @@ import ScriptStage from './ScriptStage';
 import SceneStage from './SceneStage';
 import ImageStage from './ImageStage';
 import VoiceStage from './VoiceStage';
+import ReelStage from './ReelStage';
 
 function ContentPanel({ project, onStatusChange }) {
   const getStageContent = () => {
@@ -118,6 +119,12 @@ function ContentPanel({ project, onStatusChange }) {
   const voiceStages = ['images_approved', 'voices_generated'];
   if (voiceStages.includes(project.status)) {
     return <VoiceStage project={project} onStatusChange={onStatusChange} />;
+  }
+
+  // Show ReelStage for reel-related statuses
+  const reelStages = ['voices_approved', 'reel_generated', 'completed'];
+  if (reelStages.includes(project.status)) {
+    return <ReelStage project={project} onStatusChange={onStatusChange} />;
   }
 
   return (

@@ -108,6 +108,20 @@ class WorkflowService:
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
         return project.status == "images_approved" if project else False
+
+    def can_generate_reel(self, project_id: str) -> bool:
+        """
+        Check if reel generation is allowed for the project
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            True if reel generation is allowed, False otherwise
+        """
+        from app.modules.project import service as project_service
+        project = project_service.get_project(self.db, project_id)
+        return project.status == "voices_approved" if project else False
     
     def advance_state(self, project_id: str, current_status: str, target_status: str) -> bool:
         """

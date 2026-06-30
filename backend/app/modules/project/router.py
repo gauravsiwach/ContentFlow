@@ -45,3 +45,9 @@ def get_project_status_endpoint(project_id: str, db: Session = Depends(get_db)):
 def update_project_endpoint(project_id: str, project_data: ProjectUpdate, db: Session = Depends(get_db)):
     """Update project details."""
     return update_project(db, project_id, project_data)
+
+
+@router.post("/{project_id}/complete", response_model=ProjectResponse)
+def mark_project_complete(project_id: str, db: Session = Depends(get_db)):
+    """Mark project as completed."""
+    return update_project_status(db, project_id, "completed")

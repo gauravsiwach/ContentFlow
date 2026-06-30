@@ -77,8 +77,10 @@ from app.modules.script.router import router as script_router
 from app.modules.scene.router import router as scene_router
 from app.modules.image.router import router as image_router
 from app.modules.voice.router import router as voice_router
+from app.modules.reel.router import router as reel_router
 app.include_router(project_router, prefix="/api/v1", tags=["projects"])
 app.include_router(script_router, prefix="/api/v1/projects", tags=["scripts"])
 app.include_router(scene_router, prefix="/api/v1/projects", tags=["scenes"])
 app.include_router(image_router, prefix="/api/v1/projects", tags=["images"])
 app.include_router(voice_router, prefix="/api/v1/projects", tags=["voices"])
+app.include_router(reel_router, prefix="/api/v1/projects", tags=["reels"])

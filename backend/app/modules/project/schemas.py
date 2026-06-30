@@ -7,7 +7,7 @@ class ProjectCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     topic: str = Field(..., min_length=1)
     language: str = Field(default="English")
-    duration: int = Field(default=60, ge=30, le=300)
+    duration: int = Field(default=60, ge=10, le=300)
     content_type: str = Field(default="Technology")
     template_id: Optional[str] = None
     additional_context: Optional[str] = None
@@ -17,7 +17,7 @@ class ProjectUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     topic: Optional[str] = Field(None, min_length=1)
     language: Optional[str] = None
-    duration: Optional[int] = Field(None, ge=30, le=300)
+    duration: Optional[int] = Field(None, ge=10, le=300)
     content_type: Optional[str] = None
     template_id: Optional[str] = None
     additional_context: Optional[str] = None

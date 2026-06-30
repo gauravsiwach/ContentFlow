@@ -24,4 +24,8 @@ export const projectsApi = {
   updateProject: async (projectId, projectData) => {
     return await apiClient.put(`/projects/${projectId}`, projectData);
   },
+
+  markProjectComplete: async (projectId) => {
+    return await apiClient.post(`/projects/${projectId}/complete`);
+  },
 };

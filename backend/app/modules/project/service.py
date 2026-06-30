@@ -101,8 +101,8 @@ def get_project_status(db: Session, project_id: str) -> dict:
         "scenes_approved": ["generate_images"],
         "images_generated": ["approve_images", "refine_images"],
         "images_approved": ["generate_voice"],
-        "voice_generated": ["approve_voice", "refine_voice"],
-        "voice_approved": ["generate_reel"],
+        "voices_generated": ["approve_voice", "refine_voice"],
+        "voices_approved": ["generate_reel"],
         "reel_generated": ["mark_complete"],
         "completed": []
     }

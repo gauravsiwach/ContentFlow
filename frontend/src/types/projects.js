@@ -41,4 +41,4 @@ export const LANGUAGES = [
 ];
 
 // Duration options (in seconds)
-export const DURATIONS = [30, 60, 90, 120, 180, 240, 300];
+export const DURATIONS = [10, 30, 60];
