@@ -126,8 +126,8 @@ class ReelService:
                 if not os.path.exists(audio_path):
                     raise ValueError(f"Audio file not found: {audio_path}")
 
-                # Add inputs with loop for image
-                ffmpeg_inputs.extend(['-loop', '1', '-i', img_path, '-i', audio_path])
+                # Add inputs with loop for image and explicit duration
+                ffmpeg_inputs.extend(['-loop', '1', '-t', str(scene_duration), '-i', img_path, '-i', audio_path])
 
                 # Build filter complex
                 # Split resolution into width and height
@@ -158,11 +158,12 @@ class ReelService:
                 'libx264',
                 '-preset',
                 'medium',
+                '-movflags',
+                '+faststart',
                 '-c:a',
                 'aac',
                 '-b:a',
                 '192k',
-                '-shortest',
                 '-y',
                 output_path
             ]

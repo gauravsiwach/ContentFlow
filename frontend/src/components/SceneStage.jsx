@@ -83,6 +83,13 @@ function SceneStage({ project, onStatusChange }) {
     }
   };
 
+  const getContentTypeTip = (contentType) => {
+    if (contentType === 'comedy_children') {
+      return "Use cartoon style with bright colors and exaggerated expressions for kids!";
+    }
+    return null;
+  };
+
   const toggleSceneExpand = (sceneId) => {
     setExpandedScene(expandedScene === sceneId ? null : sceneId);
   };
@@ -113,6 +120,12 @@ function SceneStage({ project, onStatusChange }) {
               <span>Total: {scenes.reduce((sum, scene) => sum + scene.duration, 0)}s</span>
             </div>
           </div>
+
+          {project.content_type === 'comedy_children' && (
+            <div className="sceneStage-tip">
+              💡 {getContentTypeTip(project.content_type)}
+            </div>
+          )}
 
           {loading && <div className="sceneStage-loading">Loading...</div>}
           {error && <div className="sceneStage-error">{error}</div>}
@@ -191,6 +204,12 @@ function SceneStage({ project, onStatusChange }) {
             <span>Total: {scenes.reduce((sum, scene) => sum + scene.duration, 0)}s</span>
           </div>
         </div>
+
+        {project.content_type === 'comedy_children' && (
+          <div className="sceneStage-tip">
+            💡 {getContentTypeTip(project.content_type)}
+          </div>
+        )}
 
         {loading && <div className="sceneStage-loading">Loading...</div>}
         

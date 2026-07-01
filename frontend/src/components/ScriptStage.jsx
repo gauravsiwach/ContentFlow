@@ -26,6 +26,25 @@ function ScriptStage({ project, onStatusChange }) {
     }
   };
 
+  const getWordCount = (text) => {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).length;
+  };
+
+  const getEstimatedDuration = (wordCount) => {
+    // Average speaking rate for children's content: ~130 words per minute
+    const wordsPerMinute = 130;
+    const minutes = wordCount / wordsPerMinute;
+    return Math.round(minutes * 60); // Convert to seconds
+  };
+
+  const getContentTypeTip = (contentType) => {
+    if (contentType === 'comedy_children') {
+      return "Keep it simple for kids - use short sentences and age-appropriate humor!";
+    }
+    return null;
+  };
+
   const handleGenerate = async () => {
     setLoading(true);
     setError('');
@@ -205,6 +224,19 @@ function ScriptStage({ project, onStatusChange }) {
         </div>
       ) : (
         <div className="scriptStage-viewer">
+          <div className="scriptStage-metrics">
+            <span className="scriptStage-metric">
+              Words: {getWordCount(script.content)}
+            </span>
+            <span className="scriptStage-metric">
+              Est. Duration: {getEstimatedDuration(getWordCount(script.content))}s
+            </span>
+          </div>
+          {project.content_type === 'comedy_children' && (
+            <div className="scriptStage-tip">
+              💡 {getContentTypeTip(project.content_type)}
+            </div>
+          )}
           <div className="scriptStage-text">{script.content}</div>
           {!script.is_approved && (
             <button

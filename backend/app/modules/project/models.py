@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
+from app.shared.content_types import ContentType
 
 
 class Project(Base):
@@ -13,7 +14,7 @@ class Project(Base):
     topic = Column(Text, nullable=False)
     language = Column(String(50), nullable=False, default="English")
     duration = Column(Integer, nullable=False, default=60)
-    content_type = Column(String(100), nullable=False, default="Technology")
+    content_type = Column(String(100), nullable=False, default=ContentType.COMEDY_CHILDREN.value)
     template_id = Column(String(36), nullable=True)
     additional_context = Column(Text, nullable=True)
     status = Column(String(50), nullable=False, default="draft")

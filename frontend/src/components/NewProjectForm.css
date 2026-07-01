@@ -74,6 +74,13 @@
   resize: vertical;
 }
 
+.newProjectForm-description {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
 .newProjectForm-buttonGroup {
   display: flex;
   gap: 1rem;

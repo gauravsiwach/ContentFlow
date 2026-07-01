@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { projectsApi } from '../api/projects';
 import { LANGUAGES, DURATIONS } from '../types/projects';
 import './NewProjectForm.css';
@@ -9,11 +9,27 @@ function NewProjectForm({ onClose, onSuccess }) {
     topic: '',
     language: 'English',
     duration: 60,
-    content_type: '',
+    content_type: 'comedy_children',
     additional_context: '',
   });
+  const [contentTypes, setContentTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchContentTypes = async () => {
+      try {
+        const types = await projectsApi.getContentTypes();
+        setContentTypes(types);
+        if (types.length > 0) {
+          setFormData(prev => ({ ...prev, content_type: types[0].value }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch content types:', err);
+      }
+    };
+    fetchContentTypes();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +51,8 @@ function NewProjectForm({ onClose, onSuccess }) {
       setLoading(false);
     }
   };
+
+  const selectedContentType = contentTypes.find(ct => ct.value === formData.content_type);
 
   return (
     <div className="newProjectForm-overlay">
@@ -113,14 +131,21 @@ function NewProjectForm({ onClose, onSuccess }) {
               <label className="newProjectForm-label">
                 Content Type
               </label>
-              <input
-                type="text"
+              <select
                 name="content_type"
                 value={formData.content_type}
                 onChange={handleChange}
-                className="newProjectForm-input"
-                placeholder="e.g., Technology, AI, Productivity, etc."
-              />
+                className="newProjectForm-select"
+              >
+                {contentTypes.map(ct => (
+                  <option key={ct.value} value={ct.value}>{ct.display_name}</option>
+                ))}
+              </select>
+              {selectedContentType && (
+                <div className="newProjectForm-description">
+                  {selectedContentType.description} ({selectedContentType.age_range})
+                </div>
+              )}
             </div>
           </div>
 

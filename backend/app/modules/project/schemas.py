@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import Optional
+from app.shared.content_types import ContentType, ContentTypeConfig
 
 
 class ProjectCreate(BaseModel):
@@ -8,9 +9,16 @@ class ProjectCreate(BaseModel):
     topic: str = Field(..., min_length=1)
     language: str = Field(default="English")
     duration: int = Field(default=60, ge=10, le=300)
-    content_type: str = Field(default="Technology")
+    content_type: str = Field(default=ContentType.COMEDY_CHILDREN.value)
     template_id: Optional[str] = None
     additional_context: Optional[str] = None
+
+    @field_validator('content_type')
+    @classmethod
+    def validate_content_type(cls, v):
+        if not ContentTypeConfig.is_valid_content_type(v):
+            raise ValueError(f"Invalid content_type. Must be one of: {[ct.value for ct in ContentTypeConfig.get_all_content_types()]}")
+        return v
 
 
 class ProjectUpdate(BaseModel):
@@ -22,6 +30,13 @@ class ProjectUpdate(BaseModel):
     template_id: Optional[str] = None
     additional_context: Optional[str] = None
     status: Optional[str] = None
+
+    @field_validator('content_type')
+    @classmethod
+    def validate_content_type(cls, v):
+        if v is not None and not ContentTypeConfig.is_valid_content_type(v):
+            raise ValueError(f"Invalid content_type. Must be one of: {[ct.value for ct in ContentTypeConfig.get_all_content_types()]}")
+        return v
 
 
 class ProjectResponse(BaseModel):

@@ -28,4 +28,8 @@ export const projectsApi = {
   markProjectComplete: async (projectId) => {
     return await apiClient.post(`/projects/${projectId}/complete`);
   },
+
+  getContentTypes: async () => {
+    return await apiClient.get('/projects/content-types');
+  },
 };

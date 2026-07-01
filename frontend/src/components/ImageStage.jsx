@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { imagesApi } from '../api/images';
 import { scenesApi } from '../api/scenes';
+import LoadingSpinner from './LoadingSpinner';
 import './ImageStage.css';
 
 function ImageStage({ project, onStatusChange }) {
@@ -8,6 +9,7 @@ function ImageStage({ project, onStatusChange }) {
   const [scenes, setScenes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [generatingSceneId, setGeneratingSceneId] = useState(null);
+  const [generatingProgress, setGeneratingProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState(null);
   const [expandedImage, setExpandedImage] = useState(null);
 
@@ -73,14 +75,17 @@ function ImageStage({ project, onStatusChange }) {
   const handleGenerateAllImages = async () => {
     try {
       setLoading(true);
-      for (const scene of scenes) {
-        await handleGenerateSceneImage(scene.id);
+      setGeneratingProgress({ current: 0, total: scenes.length });
+      for (let i = 0; i < scenes.length; i++) {
+        await handleGenerateSceneImage(scenes[i].id);
+        setGeneratingProgress({ current: i + 1, total: scenes.length });
       }
     } catch (err) {
       setError('Failed to generate images');
       console.error(err);
     } finally {
       setLoading(false);
+      setGeneratingProgress({ current: 0, total: 0 });
     }
   };
 
@@ -122,8 +127,23 @@ function ImageStage({ project, onStatusChange }) {
     }
   };
 
+  const getContentTypeTip = (contentType) => {
+    if (contentType === 'comedy_children') {
+      return "Images should be cartoon style with bright colors and cute, friendly characters!";
+    }
+    return null;
+  };
+
   if (loading) {
-    return <div className="image-stage loading">Loading images...</div>;
+    return (
+      <div className="image-stage loading">
+        <LoadingSpinner 
+          message="Generating images..." 
+          progress={generatingProgress.current > 0 ? generatingProgress : null}
+          size="large"
+        />
+      </div>
+    );
   }
 
   if (error) {
@@ -188,6 +208,12 @@ function ImageStage({ project, onStatusChange }) {
               </button>
             </div>
           </div>
+
+          {project.content_type === 'comedy_children' && (
+            <div className="image-tip">
+              💡 {getContentTypeTip(project.content_type)}
+            </div>
+          )}
 
           <div className="image-grid">
             {images.map((image) => {
@@ -258,6 +284,12 @@ function ImageStage({ project, onStatusChange }) {
           )}
         </div>
       </div>
+
+      {project.content_type === 'comedy_children' && (
+        <div className="image-tip">
+          💡 {getContentTypeTip(project.content_type)}
+        </div>
+      )}
 
       <div className="image-grid">
         {images.map((image) => {

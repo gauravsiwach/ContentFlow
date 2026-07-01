@@ -5,6 +5,7 @@ from typing import List
 from app.database import get_db
 from app.modules.project.schemas import ProjectCreate, ProjectUpdate, ProjectResponse, ProjectListResponse, ProjectStatusResponse
 from app.modules.project.service import create_project, get_project, list_projects, delete_project, update_project, update_project_status, get_project_status
+from app.shared.content_types import ContentType, ContentTypeConfig
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -20,6 +21,23 @@ def list_projects_endpoint(skip: int = 0, limit: int = 100, db: Session = Depend
     """List all projects."""
     projects = list_projects(db, skip=skip, limit=limit)
     return ProjectListResponse(projects=projects, total=len(projects))
+
+
+@router.get("/content-types", response_model=List[dict])
+def get_content_types():
+    """Get all available content types with their configurations."""
+    content_types = ContentTypeConfig.get_all_content_types()
+    result = []
+    for ct in content_types:
+        config = ContentTypeConfig.get_config(ct)
+        result.append({
+            "value": ct.value,
+            "display_name": config.get("display_name", ct.value),
+            "description": config.get("description", ""),
+            "target_audience": config.get("target_audience", ""),
+            "age_range": config.get("age_range", "")
+        })
+    return result
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
