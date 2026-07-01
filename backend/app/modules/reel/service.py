@@ -34,16 +34,22 @@ class ReelService:
 
     def delete_reel(self, project_id: str) -> None:
         """Delete reel for a project"""
+        logger.info(f"delete_reel called for project: {project_id}")
         reel = self.get_reel(project_id)
         if reel:
+            logger.info(f"Found existing reel with path: {reel.file_path}")
             # Delete file from disk
             if os.path.exists(reel.file_path):
                 try:
                     os.remove(reel.file_path)
+                    logger.info(f"Deleted reel file from disk: {reel.file_path}")
                 except Exception as e:
                     logger.error(f"Failed to delete reel file: {e}")
             self.db.delete(reel)
             self.db.commit()
+            logger.info(f"Deleted reel record from DB")
+        else:
+            logger.info(f"No existing reel found for project: {project_id}")
 
     async def generate_reel(self, project_id: str, resolution: str = "1920x1080", fps: int = 30) -> Reel:
         """
@@ -90,9 +96,16 @@ class ReelService:
             # Create project storage directory for reels
             project_storage = os.path.join(settings.STORAGE_BASE_PATH, "projects", project_id, "reel")
             os.makedirs(project_storage, exist_ok=True)
+            logger.info(f"Project storage directory: {project_storage}")
+            logger.info(f"Directory exists: {os.path.exists(project_storage)}")
+            logger.info(f"Directory writable: {os.access(project_storage, os.W_OK)}")
+
+            # Delete existing reel if any
+            self.delete_reel(project_id)
 
             # Output file path
             output_path = os.path.join(project_storage, "reel.mp4")
+            logger.info(f"Output path: {output_path}")
 
             # Build FFmpeg command to combine images and audio
             ffmpeg_inputs = []
@@ -103,8 +116,9 @@ class ReelService:
             for i, data in enumerate(scene_data):
                 img_path = data['image'].file_path
                 audio_path = data['voice'].file_path
+                scene_duration = data['scene'].duration
 
-                logger.info(f"Image path: {img_path}, Audio path: {audio_path}")
+                logger.info(f"Image path: {img_path}, Audio path: {audio_path}, Scene duration: {scene_duration}s")
 
                 # Verify files exist
                 if not os.path.exists(img_path):
@@ -112,8 +126,8 @@ class ReelService:
                 if not os.path.exists(audio_path):
                     raise ValueError(f"Audio file not found: {audio_path}")
 
-                # Add inputs
-                ffmpeg_inputs.extend(['-i', img_path, '-i', audio_path])
+                # Add inputs with loop for image
+                ffmpeg_inputs.extend(['-loop', '1', '-i', img_path, '-i', audio_path])
 
                 # Build filter complex
                 # Split resolution into width and height
@@ -157,16 +171,25 @@ class ReelService:
 
             # Run FFmpeg
             process = subprocess.run(cmd, capture_output=True, text=True)
+            logger.info(f"FFmpeg return code: {process.returncode}")
+            logger.info(f"FFmpeg stdout: {process.stdout}")
+            if process.stderr:
+                logger.info(f"FFmpeg stderr: {process.stderr}")
+
             if process.returncode != 0:
                 logger.error(f"FFmpeg error: {process.stderr}")
                 raise ValueError(f"FFmpeg failed: {process.stderr}")
-            
+
             # Verify file was created
+            logger.info(f"Checking if file exists at: {output_path}")
             if not os.path.exists(output_path):
                 logger.error(f"FFmpeg completed but file not found at: {output_path}")
                 logger.error(f"FFmpeg stdout: {process.stdout}")
                 logger.error(f"FFmpeg stderr: {process.stderr}")
                 raise ValueError(f"Reel file was not created at {output_path}")
+            else:
+                file_size = os.path.getsize(output_path)
+                logger.info(f"File exists at: {output_path}, size: {file_size} bytes")
 
             # Get video duration using ffprobe
             duration = await self._get_video_duration(output_path)
@@ -179,9 +202,6 @@ class ReelService:
                 format="mp4",
                 resolution=resolution
             )
-
-            # Delete existing reel if any
-            self.delete_reel(project_id)
 
             # Create new reel
             reel = self.create_reel(reel_create)

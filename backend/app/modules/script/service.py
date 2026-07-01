@@ -4,7 +4,8 @@ from typing import Optional
 from app.modules.script.models import Script
 from app.modules.script.schemas import ScriptUpdateRequest
 from app.shared.ai.orchestrator import Orchestrator
-from app.shared.prompts.script import SCRIPT_SYSTEM_PROMPT, SCRIPT_REFINE_PROMPT
+from app.shared.prompts.script import SCRIPT_SYSTEM_PROMPT, SCRIPT_REFINE_PROMPT, HINDI_LANGUAGE_STYLE
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +69,19 @@ class ScriptService:
         
         # Generate content
         logger.info("Calling orchestrator.generate...")
+        logger.info(f"Using script generation model: {settings.SCRIPT_GENERATION_MODEL}")
+
+        # Add Hindi language style if language is Hindi
+        system_prompt = SCRIPT_SYSTEM_PROMPT
+        if context.get("language", "").lower() == "hindi":
+            system_prompt += "\n\n" + HINDI_LANGUAGE_STYLE
+            logger.info("Adding Hindi language style to system prompt")
+
         content = await self.orchestrator.generate(
             stage="script",
             project_context=context,
-            system_prompt=SCRIPT_SYSTEM_PROMPT
+            system_prompt=system_prompt,
+            model=settings.SCRIPT_GENERATION_MODEL
         )
         logger.info(f"Generated content length: {len(content)}")
         
@@ -104,12 +114,21 @@ class ScriptService:
         }
         
         # Refine content
+        logger.info(f"Using script generation model for refinement: {settings.SCRIPT_GENERATION_MODEL}")
+
+        # Add Hindi language style if language is Hindi
+        system_prompt = SCRIPT_REFINE_PROMPT
+        if context.get("language", "").lower() == "hindi":
+            system_prompt += "\n\n" + HINDI_LANGUAGE_STYLE
+            logger.info("Adding Hindi language style to refine system prompt")
+
         refined_content = await self.orchestrator.refine(
             stage="script",
             project_context=context,
             current_artifact=script.content,
             user_instructions=instructions,
-            system_prompt=SCRIPT_REFINE_PROMPT
+            system_prompt=system_prompt,
+            model=settings.SCRIPT_GENERATION_MODEL
         )
         
         # Update script

@@ -36,13 +36,14 @@ async def generate_script(project_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Project not found")
     
     logger.info(f"Project found: {project.title}, status: {project.status}")
-    
-    # Validate state - can only generate when in draft
-    if project.status != "draft":
+
+    # Validate state - can generate from draft, script_generated, or script_approved
+    allowed_states = ["draft", "script_generated", "script_approved"]
+    if project.status not in allowed_states:
         logger.error(f"Invalid project status for script generation: {project.status}")
         raise HTTPException(
             status_code=409,
-            detail=f"Cannot generate script when status is '{project.status}'. Must be 'draft'."
+            detail=f"Cannot generate script when status is '{project.status}'. Allowed states: {', '.join(allowed_states)}"
         )
     
     try:

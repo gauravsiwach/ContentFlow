@@ -61,6 +61,7 @@ class OllamaClient:
                 logger.info(f"Response status code: {response.status_code}")
                 response.raise_for_status()
                 data = response.json()
+                # logger.info(f"Full raw response from Ollama API: {data}")
                 result = data.get("response", "")
                 logger.info(f"Ollama response received, length: {len(result)}")
                 return result

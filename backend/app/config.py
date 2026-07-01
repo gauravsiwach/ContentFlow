@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = Field(default="qwen2.5:7b", description="Ollama model to use")
     OLLAMA_TIMEOUT: int = Field(default=300, description="Ollama API timeout in seconds")
 
+    # Script Generation Model
+    SCRIPT_GENERATION_MODEL: str = Field(description="Model to use for script generation")
+
     # Ollama (Image Generation)
     OLLAMA_IMAGE_MODEL: str = Field(default="x/flux2-klein:4b", description="Ollama image generation model")
 

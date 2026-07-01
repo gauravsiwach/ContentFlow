@@ -48,6 +48,8 @@ class Orchestrator:
             project_context=project_context
         )
         logger.info(f"Prompt length: {len(prompt)}")
+        logger.info(f"Full prompt sent to Ollama:\n{prompt}")
+        logger.info(f"System prompt:\n{system_prompt}")
         
         # Generate content
         logger.info("Calling Ollama client.generate...")
@@ -57,6 +59,7 @@ class Orchestrator:
             system_prompt=system_prompt
         )
         logger.info(f"Ollama response length: {len(response)}")
+        # logger.info(f"Full response from Ollama:\n{response}")
         
         # Validate response
         logger.info("Validating response...")
@@ -99,6 +102,8 @@ class Orchestrator:
             current_artifact=current_artifact,
             user_instructions=user_instructions
         )
+        logger.info(f"Full prompt sent to Ollama (refine):\n{prompt}")
+        logger.info(f"System prompt (refine):\n{system_prompt}")
         
         # Generate refined content
         response = await self.client.generate(
@@ -106,6 +111,7 @@ class Orchestrator:
             model=model or settings.OLLAMA_MODEL,
             system_prompt=system_prompt
         )
+        logger.info(f"Full response from Ollama (refine):\n{response}")
         
         # Validate response
         validated_content = self.validator.validate(response, stage)

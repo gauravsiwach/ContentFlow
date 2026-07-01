@@ -47,13 +47,14 @@ async def generate_scenes(project_id: str, request: SceneGenerateRequest, db: Se
         raise HTTPException(status_code=404, detail="Project not found")
     
     logger.info(f"Project found: {project.title}, status: {project.status}")
-    
-    # Validate state - can only generate when script is approved
-    if project.status != "script_approved":
+
+    # Validate state - can generate from script_approved, scenes_generated, or scenes_approved
+    allowed_states = ["script_approved", "scenes_generated", "scenes_approved"]
+    if project.status not in allowed_states:
         logger.error(f"Invalid project status for scene generation: {project.status}")
         raise HTTPException(
             status_code=409,
-            detail=f"Cannot generate scenes when status is '{project.status}'. Must be 'script_approved'."
+            detail=f"Cannot generate scenes when status is '{project.status}'. Allowed states: {', '.join(allowed_states)}"
         )
     
     # Get script content

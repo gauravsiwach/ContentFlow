@@ -51,7 +51,8 @@ class WorkflowService:
         Returns:
             True if script generation is allowed, False otherwise
         """
-        return current_status == "draft"
+        allowed = ["draft", "script_generated", "script_approved"]
+        return current_status in allowed
 
     def can_generate_scenes(self, project_id: str) -> bool:
         """
@@ -65,7 +66,8 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        return project.status in ["script_approved", "scenes_generated"] if project else False
+        allowed = ["script_approved", "scenes_generated", "scenes_approved"]
+        return project.status in allowed if project else False
 
     def can_generate_images(self, project_id: str) -> bool:
         """
@@ -114,7 +116,7 @@ class WorkflowService:
         project = project_service.get_project(self.db, project_id)
         # Allow voice generation at any stage after images are approved
         allowed = [
-            "images_approved", "voices_generated", "voices_approved",
+            "images_approved", "images_generated", "voices_generated", "voices_approved",
             "reel_generated", "completed"
         ]
         return project.status in allowed if project else False
@@ -131,8 +133,9 @@ class WorkflowService:
         """
         from app.modules.project import service as project_service
         project = project_service.get_project(self.db, project_id)
-        # Allow reel generation from voices_approved or reel_generated (for regeneration)
-        return project.status in ["voices_approved", "reel_generated"] if project else False
+        # Allow reel generation from voices_generated, voices_approved, or reel_generated (for regeneration)
+        allowed = ["voices_generated", "voices_approved", "reel_generated", "completed"]
+        return project.status in allowed if project else False
     
     def advance_state(self, project_id: str, current_status: str, target_status: str) -> bool:
         """

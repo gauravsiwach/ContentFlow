@@ -95,11 +95,13 @@ async def generate_scene_image(
 
         # Check if all scenes now have images
         from app.modules.scene.models import Scene
+        project = project_service.get_project(db, project_id)
         scenes = db.query(Scene).filter(Scene.project_id == project_id).all()
         images = image_service.get_images(project_id)
 
-        if len(images) == len(scenes):
-            # All scenes have images, update project status
+        # Only update status to images_generated if currently at scenes_approved
+        # Don't update if already at later stages (images_approved, voices_generated, etc.)
+        if len(images) == len(scenes) and project.status == "scenes_approved":
             project_service.update_project_status(db, project_id, "images_generated")
             logger.info(f"All images generated for project {project_id}, status updated to images_generated")
 
